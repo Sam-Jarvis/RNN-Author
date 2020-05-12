@@ -1,5 +1,6 @@
 import ebooklib
 import pickle
+import string
 from ebooklib import epub
 from html.parser import HTMLParser
 
@@ -14,7 +15,10 @@ class MyHTMLParser(HTMLParser):
         self.data = ""
 
     def handle_starttag(self, tag, attrs):
-        self.start_tag += f"{tag} {attrs[0][0]} {attrs[0][1]}"
+        try:
+            self.start_tag += f"{tag} {attrs[0][0]} {attrs[0][1]}"
+        except(IndexError):
+            self.start_tag += f"{tag}"
 
     def handle_endtag(self, tag):
         self.end_tag += tag
@@ -23,15 +27,9 @@ class MyHTMLParser(HTMLParser):
         self.data += data
 
 
-book = epub.read_epub('WoT1.epub')
-
-def export_chapters(html_parts):
-    """creates an html file in /html-chapters for each item in html_parts"""
-    counter = 0
-    for part in html_parts:
-        with open(f'html-chapters/html-chapter{counter}.html', 'w') as current_chap:
-            current_chap.write(part.get_content().decode())
-        counter += 1
+def extract_book(path):
+    return epub.read_epub(path)
+    # book = epub.read_epub('WoT1.epub')
 
 
 def extract_chapters(book):
@@ -44,23 +42,53 @@ def extract_chapters(book):
     return documents
 
 
-def extract_content(chapter):
+def export_chapters(html_parts):
+    """creates an html file in /html-chapters for each item in html_parts"""
+    counter = 0
+    for part in html_parts:
+        with open(f'html-chapters/html-chapter{counter}.html', 'w') as current_chap:
+            current_chap.write(part.get_content().decode())
+        counter += 1
+
+
+def extract_raw_content(chapter):
     """place each paragraph of a chapter in a list and return it"""
-    lines = []
+    raw = []
     with open(chapter, "r") as chap:
-        lines = chap.readlines()
-    return lines
+        raw = chap.readlines()
+    return raw
 
 
-def extract_words(paragraph):
+def clean_raw_content(raw_content):
+    """parse raw html and return a list of clean text paragraphs"""
+    parser = MyHTMLParser()
+    parsed = []
+    for line in raw_content:
+        parser.feed(line)
+        clean = parser.data
+        clean = format_text(clean)
+        if clean != "":
+            parsed.append(clean)
+        parser.reset_data()
+    return parsed
+
+
+def format_text(text):
+    """takes a string and replaces unknown characters found in it"""
+    text = text.replace("”", "\"")
+    text = text.replace("“", "\"")
+    text = text.replace("’", "\'")
+    text = text.replace("\n", "")
+    text = text.replace("  ", "")
+    text = text.replace("—", "-")
+    return text
+
+
+def save_words(paragraph):
     """create or open file (list of words) and append new words to it"""
     with open("word-list\\words.txt", "a") as w:
-        paragraph_len = len(paragraph)
         for word in paragraph.split(" "):
-            if "/n" in word:
-                w.write(f"{word}")
-            else:
-                w.write(f"{word}\n")
+            w.write(f"{format_text(word)}\n")
 
 
 def debug_list_print_items(print_list):
@@ -73,26 +101,14 @@ def debug_list_print_stats(print_list):
     print(print_list)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # print("start: ", parser.start_tag, "\nend: ", parser.end_tag, "\ndata: ", parser.data)
     # todo: if /html-chapters is empty, run export_chapters, otherwise don't
-    chapters = extract_chapters(book)
-    print(f"{len(chapters)} chapters")
+    # chapters = extract_chapters(book)
 
-    parser = MyHTMLParser()
-    paragraph = extract_content("html-chapters\\html-chapter5.html")
+    # paragraph = extract_raw_content("html-chapters\\html-chapter5.html")
+    # parsed = clean_raw_content(paragraph)
+    #debug_list_print_stats(parsed)
+    # for i in range(0,3):
+    #     save_words(parsed[i])
 
-    parser.feed(paragraph[15])
-    extract_words(parser.data)
-    parser.reset_data()
-
-    parser.feed(paragraph[16])
-    extract_words(parser.data)
-    parser.reset_data()
-
-# PROBLEMS TO SOLVE
-# 1) What should be done with the parsed data? How is it stored / handled?
-# 2) How do I properly parse the whole file? Maybe parse each line?
-
-# GENERAL NOTES
-# Each paragraph is a <div class="fmtx1"> or <div class="fmtx"> tag
