@@ -3,6 +3,9 @@ import pickle
 import string
 from ebooklib import epub
 from html.parser import HTMLParser
+import threading
+
+lock = threading.Lock()
 
 class MyHTMLParser(HTMLParser):
     start_tag = ""
@@ -87,9 +90,9 @@ def format_text(text):
 def save_words(paragraph):
     """create or open file (list of words) and append new words to it"""
     with open("word-list\\words.txt", "a") as w:
-        for word in paragraph.split(" "):
-            w.write(f"{format_text(word)}\n")
-
+        with lock:
+            for word in paragraph.split(" "):
+                w.write(f"{format_text(word)};")
 
 def debug_list_print_items(print_list):
     for item in print_list:

@@ -6,10 +6,12 @@
 5) Short tags that have fewer / no attributes error out
 
 ## GENERAL NOTES
-Each paragraph is a <div class="fmtx1"> or <div class="fmtx"> tag
+Each paragraph is a `<div class="fmtx1"> or <div class="fmtx">` tag
 
+```
 <div class="calibre6"> <br class="calibre6"/></div>
 <div class="calibre6"> <br class="calibre6"/></div>
+```
 
 ## ORDER OF OPERATION
 1) extract_chapters: finds all items marked 'chapter' in a book and appends them to a list which it returns
