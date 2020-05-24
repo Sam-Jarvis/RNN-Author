@@ -4,7 +4,7 @@
 3) (SLOVED) Double spacing
 4) (SOLVED DIRTILY) Beginning / end tags with no data, just tags
 5) (SLOVED) Short tags that have fewer / no attributes error out
-6) Can I multi-thread but maintain the order?
+6) (IGNORED) Can I multi-thread but maintain the order?
 
 ## GENERAL NOTES
 Each paragraph is a `<div class="fmtx1"> or <div class="fmtx">` tag

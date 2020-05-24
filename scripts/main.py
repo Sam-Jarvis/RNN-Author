@@ -22,8 +22,8 @@ print(f"Total chapters: {total_chapters}")
 t1 = time.perf_counter()
 for i in pb.progressbar(range(total_chapters), "Processing: ", 40):
     for paragraph in pure[i]:
-        extractor.save_words(paragraph)
+        extractor.save_content(paragraph, ".", "sentences")
 t2 = time.perf_counter() 
 
 print(f"Elapsed time: {t2 - t1} seconds")
-print(f"Total words: {extractor.get_total_words()}")
+print(f"Total sentences: {extractor.get_total_items()}")

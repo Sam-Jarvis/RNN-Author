@@ -1,6 +1,6 @@
 import ebooklib
 from ebooklib import epub
-from htmlparser import MyHTMLParser
+from Extract.htmlparser import MyHTMLParser
 import re
 from glob import glob
 import threading
@@ -8,11 +8,11 @@ import threading
 class Extractor:
     book = epub.EpubBook()
     lock = threading.Lock()
-    total_words = 0
+    total_items = 0
 
-    def __init__(self, path_to_book, total_words=0):
+    def __init__(self, path_to_book, total_items=0):
         self.book = epub.read_epub(path_to_book)
-        self.total_words += total_words
+        self.total_items += total_items
 
 
     def extract_chapters(self, book: epub.EpubBook) -> list:
@@ -106,23 +106,17 @@ class Extractor:
         return pure_chapters
 
 
-    def save_words(self, paragraph: str, is_multithreaded=False):
+    def save_content(self, paragraph: str, splitter, filename):
         """create or open file (list of words) and append new words to it"""
-        with open(f"docs\\word-list\\words.txt", "a") as w:
-            if is_multithreaded:
-                with self.lock:
-                    for word in paragraph.split(" "):
-                        w.write(f"{self.format_text(word)};")
-                        self.total_words += 1
-            else:
-                for word in paragraph.split(" "):
-                        w.write(f"{self.format_text(word)};")
-                        self.total_words += 1
+        with open(f"docs\\word-list\\{filename}.txt", "a") as w:
+            for word in paragraph.split(splitter):
+                w.write(f"{self.format_text(word)};")
+                self.total_items += 1
 
 
-    def get_total_words(self):
+    def get_total_items(self):
         """returns the object in question's total word count (words it has saved)"""
-        return self.total_words
+        return self.total_items
 
 
     def debug_list_print_items(self, print_list: list):
